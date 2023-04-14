@@ -13,7 +13,8 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
-        token: ${{ secrets.GITHUB_TOKEN }} # Add this line to use the GITHUB_TOKEN
+        token: ${{ secrets.GITHUB_TOKEN }}
+        persist-credentials: false
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -26,13 +27,11 @@ jobs:
     - name: Run filter generator script
       run: python adblock_filter_generator.py
 
-    - name: Deploy updated filter lists
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./
-        allow_empty_commit: true
-        force_orphan: true
-        user_name: 'GitHub Action'
-        user_email: 'action@github.com'
-        commit_message: 'Update filter lists'
+    - name: Commit and push updated filter lists
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add blocklist.txt whitelist.txt
+        git commit -m "Update filter lists" || echo "No changes to commit"
+        git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+        git push
