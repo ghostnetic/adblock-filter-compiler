@@ -11,8 +11,8 @@ This repository contains a Python script that generates an AdBlock filter list b
 ## Usage
 
 1. Clone the repository or download the source code.
-2. Add or remove blocklist URLs in the `blocklist_urls` list in the `adblock_filter_generator.py` file.
-3. Run the `adblock_filter_generator.py` script. This will generate the `blocklist.txt` file with the combined filter list in AdBlock syntax format.
+2. Add or remove blocklist URLs in the `blocklist_urls` list in the `adblock_filter_compiler.py` file.
+3. Run the `adblock_filter_compiler.py` script. This will generate the `blocklist.txt` file with the combined filter list in AdBlock syntax format.
 
 ## Automated Updates
 
