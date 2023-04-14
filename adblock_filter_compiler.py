@@ -40,7 +40,7 @@ def generate_filter(file_contents):
 
 def generate_header(domain_count, duplicates_removed):
     date = datetime.now().strftime('%Y-%m-%d')
-    return f"""# Title: AdBlock Filter Generator
+    return f"""# Title: AdBlock Filter Compiler
 # Description: Python-based script that generates AdBlock syntax filters by combining and processing multiple blocklists, host files, and domain lists.
 # Created: {date}
 # Domain Count: {domain_count}
