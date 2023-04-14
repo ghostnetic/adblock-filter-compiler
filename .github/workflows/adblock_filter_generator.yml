@@ -13,8 +13,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        persist-credentials: false
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }} # Use the SSH_PRIVATE_KEY secret
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -33,5 +32,4 @@ jobs:
         git config --local user.name "GitHub Action"
         git add blocklist.txt whitelist.txt
         git commit -m "Update filter lists" || echo "No changes to commit"
-        git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
         git push
