@@ -9,25 +9,31 @@ def fetch_file(url):
 def process_list(file_lines, is_whitelist=False):
     processed_list = []
     for line in file_lines:
+        line = line.strip()
         if line.startswith('#') or line == '':
             continue
-        if is_whitelist and line.startswith('@@'):
-            line = line[2:]
-        processed_list.append(line.strip())
+        if is_whitelist:
+            line = '@@||' + line + '^'
+        else:
+            if line.startswith('127.0.0.1 ') or line.startswith('0.0.0.0 '):
+                line = '||' + line[10:] + '^'
+            else:
+                line = '||' + line + '^'
+        processed_list.append(line)
     return processed_list
 
 def main():
     blocklist_urls = [
-        "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/multi.txt",
-        "https://gitlab.com/quidsup/notrack-blocklists/-/raw/master/trackers.hosts",
-        "https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt",
-        "https://adguardteam.github.io/HostlistsRegistry/assets/filter_24.txt"
+        'https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/multi.txt',
+        'https://gitlab.com/quidsup/notrack-blocklists/-/raw/master/trackers.hosts',
+        'https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt',
+        'https://adguardteam.github.io/HostlistsRegistry/assets/filter_24.txt'
     ]
 
     whitelist_urls = [
-        "https://github.com/hagezi/dns-blocklists/raw/main/adblock/whitelist.txt",
-        "https://github.com/hagezi/dns-blocklists/raw/main/adblock/whitelist-urlshortener.txt",
-        "https://github.com/hagezi/dns-blocklists/raw/main/adblock/whitelist-referral.txt"
+        'https://github.com/hagezi/dns-blocklists/raw/main/adblock/whitelist.txt',
+        'https://github.com/hagezi/dns-blocklists/raw/main/adblock/whitelist-urlshortener.txt',
+        'https://github.com/hagezi/dns-blocklists/raw/main/adblock/whitelist-referral.txt'
     ]
 
     blocklist = []
@@ -43,14 +49,12 @@ def main():
     blocklist = sorted(list(set(blocklist) - set(whitelist)))
     whitelist = sorted(list(set(whitelist)))
 
-    date = datetime.now().strftime('%Y-%m-%d')
-    domain_count = len(blocklist)
-    duplicates_removed = len(set(blocklist))
+    duplicates_removed = len(blocklist) - len(set(blocklist))
 
     header = f"""# Title: AdBlock Filter Generator
 # Description: Python-based script that generates AdBlock syntax filters by combining and processing multiple blocklists, host files, and domain lists.
-# Created: {date}
-# Domain Count: {domain_count}
+# Created: {datetime.now().strftime('%Y-%m-%d')}
+# Domain Count: {len(blocklist)}
 # Duplicates Removed: {duplicates_removed}
 #===============================================================""".strip()
 
