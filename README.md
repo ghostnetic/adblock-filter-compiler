@@ -1,79 +1,32 @@
 # AdBlock Filter Generator
 
-AdBlock Filter Generator is a Python-based script that generates AdBlock syntax filters by combining and processing multiple blocklists, host files, and domain lists. The script fetches and parses blocklists and whitelists from provided URLs, removes redundant entries, and creates two output files: `blocklist.txt` and `whitelist.txt`.
+This repository contains a Python script that generates an AdBlock filter list by combining and processing multiple blocklists, host files, and domain lists. The script removes duplicates and outputs a sorted list of domains in AdBlock syntax format.
 
-## Prerequisites
+## Features
 
-- Python 3.x
-- `requests` library
-
-## Setup
-
-1. Clone the repository:
-
-```
-
-git clone <https://github.com/><your-username>/adblock-filter-generator.git
-
-```
-
-2. Navigate to the repository directory:
-
-```
-
-cd adblock-filter-generator
-
-```
-
-3. Install the required dependencies:
-
-```
-
-pip install -r requirements.txt
-
-````
-
-## Configuration
-
-In the `adblock_filter_generator.py` script, add the URLs for the blocklists and whitelists you want to use to the `blocklist_urls` and `whitelist_urls` lists.
-
-Example:
-
-```python
-blocklist_urls = [
- "https://example.com/blocklist.txt",
- "https://anotherexample.com/hosts.txt"
-]
-
-whitelist_urls = [
- "https://example.com/whitelist.txt"
-]
-````
+- Combines multiple blocklists, host files, and domain lists into a single AdBlock filter list
+- Removes duplicate entries
+- Generates a header with the date, domain count, and the number of duplicates removed
 
 ## Usage
 
-Run the script with the following command:
+1. Clone the repository or download the source code.
+2. Add or remove blocklist URLs in the `blocklist_urls` list in the `adblock_filter_generator.py` file.
+3. Run the `adblock_filter_generator.py` script. This will generate the `blocklist.txt` file with the combined filter list in AdBlock syntax format.
 
-```
-python adblock_filter_generator.py
-```
+## Automated Updates
 
-The script will fetch and process the lists, remove redundant entries, and save the results to "blocklist.txt" and "whitelist.txt".
+This repository uses GitHub Actions to automate the filter generation process. The workflow runs every day at 9 AM EST (2 PM UTC) and updates the `blocklist.txt` file if there are any changes.
 
-## Scheduling
+## Dependencies
 
-To refresh the lists every 24 hours, you can schedule the script to run daily using a task scheduler or cron job, depending on your operating system.
+- Python 3.x
+- requests
 
-### Windows:
+## Contributing
 
-Use Windows Task Scheduler to create a task that runs the script daily.
+Feel free to open an issue or submit a pull request if you have any improvements or suggestions.
 
-### macOS / Linux:
+## License
 
-Use `cron` to create a daily job that runs the script. Add an entry similar to the following in your crontab (replace `/path/to/script` with the actual path to the script):
-
-```
-0 0 * * * /usr/bin/python /path/to/script/adblock_filter_generator.py
-```
-
-This will run the script every day at midnight.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
