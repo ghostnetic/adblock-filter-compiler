@@ -1,4 +1,4 @@
-name: AdBlock Filter Generator
+name: AdBlock Filter Compiler
 
 on:
   schedule:
@@ -22,7 +22,7 @@ jobs:
       run: pip install requests
 
     - name: Run filter generator script
-      run: python adblock_filter_generator.py
+      run: python adblock_filter_compiler.py
 
     - name: Commit and push updated filter list
       run: |
