@@ -1,6 +1,6 @@
 # AdBlock Filter Compiler
 
-This repository contains a Python script that generates an AdBlock filter list by combining and processing multiple blocklists, host files, and domain lists. The script removes duplicates and outputs a sorted list of domains in AdBlock syntax format.
+This repository offers a Python script that combines and processes various blocklists, host files, and domain lists to produce an AdBlock filter list. A sorted list of domains in AdBlock syntax format is produced after the script eliminates duplicates.
 
 ## Features
 
