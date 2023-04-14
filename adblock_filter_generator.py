@@ -48,7 +48,7 @@ def main():
     duplicates_removed = len(set(blocklist))
 
     header = f"""# Title: AdBlock Filter Generator
-# Description: Chrome Extension to generate adblock syntax filter from multiple host files and blocklists
+# Description: Python-based script that generates AdBlock syntax filters by combining and processing multiple blocklists, host files, and domain lists.
 # Created: {date}
 # Domain Count: {domain_count}
 # Duplicates Removed: {duplicates_removed}
