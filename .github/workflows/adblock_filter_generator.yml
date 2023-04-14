@@ -2,8 +2,8 @@ name: AdBlock Filter Generator
 
 on:
   schedule:
-    - cron: '0 14 * * *' # Runs every day at 2 PM UTC (9 AM EST)
-  workflow_dispatch: # Allows manual triggering of the workflow
+    - cron: '0 14 * * *' # Runs every day at 9 AM EST (2 PM UTC)
+  workflow_dispatch:
 
 jobs:
   generate_adblock_filters:
@@ -19,15 +19,15 @@ jobs:
         python-version: 3.x
 
     - name: Install dependencies
-      run: pip install -r requirements.txt
+      run: pip install requests
 
     - name: Run filter generator script
       run: python adblock_filter_generator.py
 
-    - name: Commit and push updated filter lists
+    - name: Commit and push updated filter list
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add blocklist.txt whitelist.txt
-        git commit -m "Update filter lists" || echo "No changes to commit"
-        git push "https://github.com/${{ github.repository }}.git"
+        git add blocklist.txt
+        git commit -m "Update filter list" || echo "No changes to commit"
+        git push
