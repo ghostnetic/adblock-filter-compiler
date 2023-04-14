@@ -26,11 +26,13 @@ jobs:
     - name: Run filter generator script
       run: python adblock_filter_generator.py
 
-    - name: Commit and push updated filter lists
-      run: |
-        git config --local user.email "github@smellyshiba.com"
-        git config --local user.name "GitHub Action"
-        git add blocklist.txt whitelist.txt
-        git commit -m "Update filter lists" || echo "No changes to commit"
-        git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/ghostnetic/fliterlists.git
-        git push
+    - name: Deploy updated filter lists
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        allow_empty_commit: true
+        force_orphan: true
+        user_name: 'GitHub Action'
+        user_email: 'action@github.com'
+        commit_message: 'Update filter lists'
