@@ -18,18 +18,18 @@ def process_list(file_lines, is_whitelist=False):
 
 def main():
     blocklist_urls = [
-        https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/multi.txt
-        https://gitlab.com/quidsup/notrack-blocklists/-/raw/master/trackers.hosts
-        https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt
-        https://adguardteam.github.io/HostlistsRegistry/assets/filter_24.txt
-    ]
+    "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/multi.txt",
+    "https://gitlab.com/quidsup/notrack-blocklists/-/raw/master/trackers.hosts",
+    "https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt",
+    "https://adguardteam.github.io/HostlistsRegistry/assets/filter_24.txt"
+]
 
-    whitelist_urls = [
-        https://github.com/hagezi/dns-blocklists/raw/main/adblock/whitelist.txt
-        https://github.com/hagezi/dns-blocklists/raw/main/adblock/whitelist-urlshortener.txt
-        https://github.com/hagezi/dns-blocklists/raw/main/adblock/whitelist-referral.txt
-        
-    ]
+whitelist_urls = [
+    "https://github.com/hagezi/dns-blocklists/raw/main/adblock/whitelist.txt",
+    "https://github.com/hagezi/dns-blocklists/raw/main/adblock/whitelist-urlshortener.txt",
+    "https://github.com/hagezi/dns-blocklists/raw/main/adblock/whitelist-referral.txt"
+]
+
 
     blocklist = []
     for url in blocklist_urls:
