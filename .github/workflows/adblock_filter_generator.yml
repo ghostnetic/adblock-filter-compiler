@@ -12,6 +12,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }} # Add this line to use the GITHUB_TOKEN
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -27,7 +29,8 @@ jobs:
     - name: Commit and push updated filter lists
       run: |
         git config --local user.email "github@smellyshiba.com"
-        git config --local user.name "ghostnetic"
+        git config --local user.name "GitHub Action"
         git add blocklist.txt whitelist.txt
         git commit -m "Update filter lists" || echo "No changes to commit"
+        git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/ghostnetic/fliterlists.git
         git push
