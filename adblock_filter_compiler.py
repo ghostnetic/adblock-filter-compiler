@@ -35,7 +35,7 @@ def generate_filter(file_contents):
 
     sorted_rules = sorted(list(adblock_rules_set))
     header = generate_header(len(sorted_rules), duplicates_removed)
-    filter_content = '\n'.join([header, *sorted_rules])
+    filter_content = '\n'.join([header, '', *sorted_rules]) # Added empty line after the header
     return filter_content, duplicates_removed
 
 def generate_header(domain_count, duplicates_removed):
