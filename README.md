@@ -8,6 +8,16 @@ This repository offers a Python script that combines and processes various block
 - Removes duplicate entries
 - Generates a header with the date, domain count, and the number of duplicates removed
 
+## Included Filter Lists
+
+This project combines the following filter lists by default:
+
+- [hagezi/dns-blocklists (multi.txt)](https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/multi.txt)
+- [quidsup/notrack-blocklists (trackers.hosts)](https://gitlab.com/quidsup/notrack-blocklists/-/raw/master/trackers.hosts)
+- [hblock (hosts_adblock.txt)](https://hblock.molinero.dev/hosts_adblock.txt)
+
+You can easily add your own filter lists by modifying the `adblock_filter_generator.py` script and updating the `blocklist_urls` list with the URLs of your custom filter lists.
+
 ## Usage
 
 1. Clone the repository or download the source code.
