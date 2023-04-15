@@ -16,7 +16,7 @@ This repository offers a Python script that combines and processes various block
 
 ## Automated Updates
 
-This repository uses GitHub Actions to automate the filter generation process. The workflow runs every day at 9 AM EST (2 PM UTC) and updates the `blocklist.txt` file if there are any changes.
+This repository uses GitHub Actions to automate the filter generation process. The workflow runs every day and updates the `blocklist.txt` file if there are any changes.
 
 ## Dependencies
 
