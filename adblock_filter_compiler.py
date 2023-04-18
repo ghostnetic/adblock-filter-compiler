@@ -3,35 +3,22 @@ from datetime import datetime
 
 def parse_hosts_file(content):
     lines = content.split('\n')
-    adblock_rules = []
-
-    for line in lines:
-        line = line.strip()
-
-        if line.startswith('#') or line.startswith('!') or line == '':
-            continue
-
-        if line.startswith('||') and line.endswith('^'):
-            adblock_rules.append(line)
-        else:
-            parts = line.split()
-            domain = parts[-1]
-            rule = f'||{domain}^'
-            adblock_rules.append(rule)
-
+    adblock_rules = [
+        line for line in lines
+        if line.startswith('||') and line.endswith('^')
+    ] + [
+        f'||{line.split()[-1]}^'
+        for line in lines
+        if not line.startswith('#') and not line.startswith('!') and line != ''
+    ]
     return adblock_rules
 
 def generate_filter(file_contents):
     duplicates_removed = 0
-    adblock_rules_set = set()
-
-    for content in file_contents:
-        adblock_rules = parse_hosts_file(content)
-        for rule in adblock_rules:
-            if rule not in adblock_rules_set:
-                adblock_rules_set.add(rule)
-            else:
-                duplicates_removed += 1
+    adblock_rules_set = {
+        rule for content in file_contents
+        for rule in parse_hosts_file(content)
+    }
 
     sorted_rules = sorted(list(adblock_rules_set))
     header = generate_header(len(sorted_rules), duplicates_removed)
@@ -47,6 +34,7 @@ def generate_header(domain_count, duplicates_removed):
 # Duplicates Removed: {duplicates_removed}
 #==============================================================="""
 
+
 def main():
     blocklist_urls = [
         'https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/multi.txt',
@@ -54,10 +42,7 @@ def main():
         'https://hblock.molinero.dev/hosts_adblock.txt',
     ]
 
-    file_contents = []
-    for url in blocklist_urls:
-        response = requests.get(url)
-        file_contents.append(response.text)
+    file_contents = [requests.get(url).text for url in blocklist_urls]
 
     filter_content, duplicates_removed = generate_filter(file_contents)
 
