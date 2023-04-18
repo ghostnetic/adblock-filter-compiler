@@ -5,7 +5,7 @@ This repository offers a Python script that combines and processes various block
 ## Features
 
 - Combines multiple blocklists, host files, and domain lists into a single AdBlock filter list
-- Removes duplicate entries
+- Removes duplicate entries and discards redundant rules
 - Generates a header with the date, domain count, and the number of duplicates removed
 
 ## Included Filter Lists
