@@ -21,50 +21,31 @@ def parse_hosts_file(content):
 
     return adblock_rules
 
-def generate_filter(file_contents, compress=True):
-    adblock_rules_set = {rule for content in file_contents for rule in parse_hosts_file(content)}
-    if compress:
-        adblock_rules_set, domains_compressed = compress_rules(adblock_rules_set)
-    else:
-        domains_compressed = 0
-    duplicates_removed = len(file_contents) * len(adblock_rules_set) - len(adblock_rules_set)
+def generate_filter(file_contents):
+    duplicates_removed = 0
+    adblock_rules_set = set()
 
-    sorted_rules = sorted(adblock_rules_set)
-    header = generate_header(len(sorted_rules), duplicates_removed, domains_compressed)
-    filter_content = '\n'.join([header, '', *sorted_rules])
+    for content in file_contents:
+        adblock_rules = parse_hosts_file(content)
+        for rule in adblock_rules:
+            if rule not in adblock_rules_set:
+                adblock_rules_set.add(rule)
+            else:
+                duplicates_removed += 1
+
+    sorted_rules = sorted(list(adblock_rules_set))
+    header = generate_header(len(sorted_rules), duplicates_removed)
+    filter_content = '\n'.join([header, '', *sorted_rules]) # Added empty line after the header
     return filter_content, duplicates_removed
 
-def compress_rules(adblock_rules_set):
-    compressed_rules = set()
-    excluded_domains = set()
-    domains_compressed = 0
-
-    for rule in adblock_rules_set:
-        if rule.startswith('||'):
-            domain = rule[2:-1]
-            if not any(d for d in excluded_domains if domain.endswith(d)):
-                compressed_rules.add(rule)
-                excluded_domains.add(domain)
-            else:
-                domains_compressed += 1
-        else:
-            compressed_rules.add(rule)
-
-    return compressed_rules, domains_compressed
-
-
-def generate_header(domain_count, duplicates_removed, domains_compressed):
+def generate_header(domain_count, duplicates_removed):
     date = datetime.now().strftime('%Y-%m-%d')
-    header_lines = [
-        '# Title: AdBlock Filter Compiler',
-        '# Description: Python-based script that generates AdBlock syntax filters by combining and processing multiple blocklists, host files, and domain lists.',
-        f'# Created: {date}',
-        f'# Domain Count: {domain_count}',
-        f'# Duplicates Removed: {duplicates_removed}',
-        f'# Domains Compressed: {domains_compressed}',
-        '#===============================================================',
-    ]
-    return '\n'.join(header_lines)
+    return f"""# Title: AdBlock Filter Compiler
+# Description: Python-based script that generates AdBlock syntax filters by combining and processing multiple blocklists, host files, and domain lists.
+# Created: {date}
+# Domain Count: {domain_count}
+# Duplicates Removed: {duplicates_removed}
+#==============================================================="""
 
 def main():
     blocklist_urls = [
@@ -78,7 +59,7 @@ def main():
         response = requests.get(url)
         file_contents.append(response.text)
 
-    filter_content, duplicates_removed = generate_filter(file_contents, compress=True)
+    filter_content, duplicates_removed = generate_filter(file_contents)
 
     with open('blocklist.txt', 'w') as f:
         f.write(filter_content)
