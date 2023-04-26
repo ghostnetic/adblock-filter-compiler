@@ -14,7 +14,7 @@ This project combines the following filter lists by default:
 
 - [hagezi/dns-blocklists (multi.txt)](https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/multi.txt)
 - [quidsup/notrack-blocklists (trackers.hosts)](https://gitlab.com/quidsup/notrack-blocklists/-/raw/master/trackers.hosts)
-- [hblock (hosts_adblock.txt)](https://hblock.molinero.dev/hosts_adblock.txt)
+- [OISD Blocklist Big (big.oisd.nl)](https://adguardteam.github.io/HostlistsRegistry/assets/filter_27.txt)
 
 You can easily add your own filter lists by modifying the `adblock_filter_generator.py` script and updating the `blocklist_urls` list with the URLs of your custom filter lists.
 
