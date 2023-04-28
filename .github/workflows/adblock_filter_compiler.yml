@@ -2,7 +2,7 @@ name: AdBlock Filter Compiler
 
 on:
   schedule:
-    - cron: '0 14 * * *' # Runs every day at 9 AM EST (2 PM UTC)
+    - cron: '0 18 * * *' # Runs every day at 1 PM EST (6 PM UTC)
   workflow_dispatch:
 
 jobs:
