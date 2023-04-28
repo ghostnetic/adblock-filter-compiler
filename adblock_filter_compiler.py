@@ -1,64 +1,63 @@
-import concurrent.futures
 import requests
 from datetime import datetime
 
 
 def parse_hosts_file(content):
-    adblock_rules = (line.strip() for line in content.split('\n')
-                     if not (line.startswith('#') or line.startswith('!') or line == ''))
+    lines = content.split('\n')
+    adblock_rules = []
 
-    return set(rule for rule in adblock_rules if rule.startswith('||') and rule.endswith('^')
-               or (parts := rule.split()) and (domain := parts[-1]) and f'||{domain}^')
+    for line in lines:
+        line = line.strip()
+
+        if line.startswith('#') or line.startswith('!') or line == '':
+            continue
+
+        if line.startswith('||') and line.endswith('^'):
+            adblock_rules.append(line)
+        else:
+            parts = line.split()
+            domain = parts[-1]
+            rule = f'||{domain}^'
+            adblock_rules.append(rule)
+
+    return adblock_rules
 
 
-def compress_rules(adblock_rules_set):
-    compressed_rules = set()
-    excluded_domains = set()
+def remove_redundant_rules(adblock_rules_set):
+    non_redundant_rules = set()
 
     for rule in adblock_rules_set:
-        if rule.startswith('||'):
-            domain = rule[2:-1]
-            if not any(d for d in excluded_domains if domain.endswith(d)):
-                compressed_rules.add(rule)
-                excluded_domains.add(domain)
-        else:
-            compressed_rules.add(rule)
+        domain = rule[2:-1]
+        if not any(d for d in non_redundant_rules if domain.endswith(d)):
+            non_redundant_rules.add(rule)
 
-    return compressed_rules
+    return non_redundant_rules
 
 
-def generate_filter(file_contents, compress=True):
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        adblock_rules_set = set()
-        for adblock_rules in executor.map(parse_hosts_file, file_contents):
-            adblock_rules_set.update(adblock_rules)
+def generate_filter(file_contents):
+    adblock_rules_set = set()
 
-    if compress:
-        adblock_rules_set = compress_rules(adblock_rules_set)
+    for content in file_contents:
+        adblock_rules = parse_hosts_file(content)
+        adblock_rules_set.update(adblock_rules)
 
-    duplicates_removed = len(file_contents) * len(adblock_rules_set) - len(adblock_rules_set)
-    sorted_rules = sorted(adblock_rules_set)
+    non_redundant_rules = remove_redundant_rules(adblock_rules_set)
+    redundant_rules_count = len(adblock_rules_set) - len(non_redundant_rules)
 
-    header = generate_header(len(sorted_rules), duplicates_removed)
+    sorted_rules = sorted(list(non_redundant_rules))
+    header = generate_header(len(sorted_rules), redundant_rules_count)
     filter_content = '\n'.join([header, '', *sorted_rules])
+    return filter_content, redundant_rules_count
 
-    return filter_content, duplicates_removed
 
-
-def generate_header(domain_count, duplicates_removed, compressed_count=None):
+def generate_header(domain_count, redundant_rules_count):
     date = datetime.now().strftime('%Y-%m-%d')
-    header = f"""# Title: AdBlock Filter Compiler
+    return f"""# Title: AdBlock Filter Compiler
 # Description: Python-based script that generates AdBlock syntax filters by combining and processing multiple blocklists, host files, and domain lists.
 # Created: {date}
 # Domain Count: {domain_count}
-# Duplicates Removed: {duplicates_removed}
-#"""
-    if compressed_count is not None:
-        header += f"Domains Compressed: {compressed_count}\n#"
-
-    header += "===============================================================\n"
-
-    return header
+# Redundant Rules Removed: {redundant_rules_count}
+#==============================================================="""
 
 
 def main():
@@ -69,13 +68,11 @@ def main():
     ]
 
     file_contents = []
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = [executor.submit(requests.get, url) for url in blocklist_urls]
-        for future in concurrent.futures.as_completed(futures):
-            response = future.result()
-            file_contents.append(response.text)
+    for url in blocklist_urls:
+        response = requests.get(url)
+        file_contents.append(response.text)
 
-    filter_content, duplicates_removed = generate_filter(file_contents)
+    filter_content, redundant_rules_count = generate_filter(file_contents)
 
     with open('blocklist.txt', 'w') as f:
         f.write(filter_content)
