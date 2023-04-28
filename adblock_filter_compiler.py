@@ -1,5 +1,6 @@
 import requests
 from datetime import datetime
+import concurrent.futures
 
 
 def parse_hosts_file(content):
@@ -36,17 +37,12 @@ def remove_redundant_rules(adblock_rules_set):
 
 
 def generate_filter(file_contents):
-    duplicates_removed = 0
-    adblock_rules_set = set()
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        adblock_rules_set = set()
+        for adblock_rules in executor.map(parse_hosts_file, file_contents):
+            adblock_rules_set.update(adblock_rules)
 
-    for content in file_contents:
-        adblock_rules = parse_hosts_file(content)
-        for rule in adblock_rules:
-            if rule not in adblock_rules_set:
-                adblock_rules_set.add(rule)
-            else:
-                duplicates_removed += 1
-
+    duplicates_removed = sum(len(rules) for rules in file_contents) - len(adblock_rules_set)
     adblock_rules_set = remove_redundant_rules(adblock_rules_set)
     sorted_rules = sorted(list(adblock_rules_set))
     header = generate_header(len(sorted_rules), duplicates_removed)
@@ -71,10 +67,9 @@ def main():
         'https://adguardteam.github.io/HostlistsRegistry/assets/filter_27.txt',
     ]
 
-    file_contents = []
-    for url in blocklist_urls:
-        response = requests.get(url)
-        file_contents.append(response.text)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(requests.get, url) for url in blocklist_urls]
+        file_contents = [future.result().text for future in concurrent.futures.as_completed(futures)]
 
     filter_content, duplicates_removed = generate_filter(file_contents)
 
