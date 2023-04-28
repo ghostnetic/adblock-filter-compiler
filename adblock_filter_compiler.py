@@ -66,7 +66,6 @@ def main():
         'https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/multi.txt',
         'https://gitlab.com/quidsup/notrack-blocklists/-/raw/master/trackers.hosts',
         'https://adguardteam.github.io/HostlistsRegistry/assets/filter_27.txt',
-        'https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/native.tiktok.txt',
     ]
 
     file_contents = []
@@ -74,3 +73,13 @@ def main():
         futures = [executor.submit(requests.get, url) for url in blocklist_urls]
         for future in concurrent.futures.as_completed(futures):
             response = future.result()
+            file_contents.append(response.text)
+
+    filter_content, duplicates_removed = generate_filter(file_contents)
+
+    with open('blocklist.txt', 'w') as f:
+        f.write(filter_content)
+
+
+if __name__ == "__main__":
+    main()
