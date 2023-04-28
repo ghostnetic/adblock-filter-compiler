@@ -25,38 +25,42 @@ def parse_hosts_file(content):
 
 def remove_redundant_rules(adblock_rules_set):
     non_redundant_rules = set()
+    sorted_rules = sorted(adblock_rules_set, key=lambda x: x.count('.'), reverse=True)
 
-    for rule in adblock_rules_set:
+    for rule in sorted_rules:
         domain = rule[2:-1]
-        if not any(d for d in non_redundant_rules if domain.endswith(d)):
+        if not any(r for r in non_redundant_rules if domain.endswith(r[2:])):
             non_redundant_rules.add(rule)
 
     return non_redundant_rules
 
 
 def generate_filter(file_contents):
+    duplicates_removed = 0
     adblock_rules_set = set()
 
     for content in file_contents:
         adblock_rules = parse_hosts_file(content)
-        adblock_rules_set.update(adblock_rules)
+        for rule in adblock_rules:
+            if rule not in adblock_rules_set:
+                adblock_rules_set.add(rule)
+            else:
+                duplicates_removed += 1
 
-    non_redundant_rules = remove_redundant_rules(adblock_rules_set)
-    redundant_rules_count = len(adblock_rules_set) - len(non_redundant_rules)
-
-    sorted_rules = sorted(list(non_redundant_rules))
-    header = generate_header(len(sorted_rules), redundant_rules_count)
-    filter_content = '\n'.join([header, '', *sorted_rules])
-    return filter_content, redundant_rules_count
+    adblock_rules_set = remove_redundant_rules(adblock_rules_set)
+    sorted_rules = sorted(list(adblock_rules_set))
+    header = generate_header(len(sorted_rules), duplicates_removed)
+    filter_content = '\n'.join([header, '', *sorted_rules])  # Added empty line after the header
+    return filter_content, duplicates_removed
 
 
-def generate_header(domain_count, redundant_rules_count):
+def generate_header(domain_count, duplicates_removed):
     date = datetime.now().strftime('%Y-%m-%d')
     return f"""# Title: AdBlock Filter Compiler
 # Description: Python-based script that generates AdBlock syntax filters by combining and processing multiple blocklists, host files, and domain lists.
 # Created: {date}
 # Domain Count: {domain_count}
-# Redundant Rules Removed: {redundant_rules_count}
+# Duplicates Removed: {duplicates_removed}
 #==============================================================="""
 
 
@@ -72,7 +76,7 @@ def main():
         response = requests.get(url)
         file_contents.append(response.text)
 
-    filter_content, redundant_rules_count = generate_filter(file_contents)
+    filter_content, duplicates_removed = generate_filter(file_contents)
 
     with open('blocklist.txt', 'w') as f:
         f.write(filter_content)
