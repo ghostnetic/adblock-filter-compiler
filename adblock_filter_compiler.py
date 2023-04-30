@@ -56,8 +56,8 @@ def main():
 
     file_contents = []
     for url in blocklist_urls:
-        response = requests.get(url)
-        file_contents.append(response.text)
+        with requests.get(url) as response:
+            file_contents.append(response.text)
 
     filter_content, duplicates_removed = generate_filter(file_contents)
 
@@ -66,3 +66,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
