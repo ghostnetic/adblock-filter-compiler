@@ -29,5 +29,6 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add blocklist.txt
+        git add whitelist.txt
         git commit -m "Update filter list" || echo "No changes to commit"
         git push
