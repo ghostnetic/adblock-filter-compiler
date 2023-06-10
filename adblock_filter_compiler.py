@@ -1,4 +1,6 @@
+import re
 import requests
+from datetime import datetime
 
 def is_valid_domain(domain):
     """Checks if a string is a valid domain."""
