@@ -1,4 +1,4 @@
-import re
+import requests
 
 def is_valid_domain(domain):
     """Checks if a string is a valid domain."""
