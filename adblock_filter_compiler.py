@@ -29,15 +29,18 @@ def generate_filter(file_contents):
     duplicates_removed = 0
     redundant_rules_removed = 0
     adblock_rules_set = set()
+    base_domain_set = set()
 
     for content in file_contents:
         adblock_rules = parse_hosts_file(content)
         for rule in adblock_rules:
+            domain = rule[2:-1]  # Remove '||' and '^'
+            base_domain = '.'.join(domain.split('.')[-2:])  # Get the base domain (last two parts)
             if rule not in adblock_rules_set:
                 # Check for redundant rules
-                domain = rule[2:-1]  # Remove '||' and '^'
-                if not any(d in adblock_rules_set for d in (f'||{d}^' for d in get_parent_domains(domain))):
+                if base_domain not in base_domain_set:
                     adblock_rules_set.add(rule)
+                    base_domain_set.add(base_domain)
                 else:
                     redundant_rules_removed += 1
             else:
