@@ -60,9 +60,12 @@ def generate_header(domain_count, duplicates_removed, redundant_rules_removed):
 #=================================================================="""
 
 def get_parent_domains(domain):
-    """Generates all possible parent domains of a given domain."""
+    """Generates the immediate parent domain of a given domain."""
     parts = domain.split('.')
-    return ['.'.join(parts[i:]) for i in range(1, len(parts))]
+    if len(parts) > 2:
+        return ['.'.join(parts[i:]) for i in range(1, 2)]
+    else:
+        return []
 
 def main():
     """Main function to fetch blocklists and generate a combined filter."""
