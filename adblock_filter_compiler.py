@@ -1,6 +1,7 @@
 import re
 import requests
 from datetime import datetime
+import json
 
 def is_valid_domain(domain):
     """Checks if a string is a valid domain."""
@@ -81,12 +82,10 @@ def get_parent_domains(domain):
 
 def main():
     """Main function to fetch blocklists and generate a combined filter."""
-    blocklist_urls = [
-        'https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/multi.txt',
-        'https://gitlab.com/quidsup/notrack-blocklists/-/raw/master/trackers.hosts',
-        'https://adguardteam.github.io/HostsRegistry/assets/filter_27.txt',
-        'https://hblock.molinero.dev/hosts_adblock.txt',
-    ]
+    with open('config.json') as f:
+        config = json.load(f)
+
+    blocklist_urls = config['blocklist_urls']
 
     file_contents = []
     for url in blocklist_urls:
@@ -101,4 +100,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
     
