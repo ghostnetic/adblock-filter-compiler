@@ -4,7 +4,7 @@ from datetime import datetime
 def parse_hosts_file(content):
     """Parses a host file content into AdBlock rules."""
     lines = content.split('\n')
-    adblock_rules = []
+    adblock_rules = set()
 
     for line in lines:
         line = line.strip()
@@ -15,12 +15,12 @@ def parse_hosts_file(content):
 
         # Check if line follows AdBlock syntax, else create new rule
         if line.startswith('||') and line.endswith('^'):
-            adblock_rules.append(line)
+            adblock_rules.add(line)
         else:
             parts = line.split()
             domain = parts[-1]
             rule = f'||{domain}^'
-            adblock_rules.append(rule)
+            adblock_rules.add(rule)
 
     return adblock_rules
 
@@ -92,4 +92,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
+    
