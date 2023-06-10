@@ -58,6 +58,7 @@ def main():
         'https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/multi.txt',
         'https://gitlab.com/quidsup/notrack-blocklists/-/raw/master/trackers.hosts',
         'https://adguardteam.github.io/HostlistsRegistry/assets/filter_27.txt',
+        'https://hblock.molinero.dev/hosts_adblock.txt',
     ]
 
     file_contents = []
