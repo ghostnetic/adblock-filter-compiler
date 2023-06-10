@@ -62,10 +62,10 @@ def generate_filter(file_contents):
 
 def generate_header(domain_count, duplicates_removed, redundant_rules_removed):
     """Generates header with specific domain count, removed duplicates, and compressed domains information."""
-    date = datetime.now().strftime('%Y-%m-%d')
+    date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S %Z')  # Includes date, time, and timezone
     return f"""# Title: AdBlock Filter Compiler
-# Description: A Python script that generates AdBlock syntax filters by combining and processing multiple blocklists, host files, and domain lists.
-# Created: {date}
+# Description: Python script that generates adblock filters by combining blocklists, host files, and domain lists.
+# Last Modified: {date_time}
 # Domain Count: {domain_count}
 # Duplicates Removed: {duplicates_removed}
 # Domains Compressed: {redundant_rules_removed}
