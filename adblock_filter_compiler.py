@@ -1,5 +1,11 @@
-import requests
-from datetime import datetime
+import re
+
+def is_valid_domain(domain):
+    """Checks if a string is a valid domain."""
+    domain_regex = re.compile(
+        r"^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$"
+    )
+    return bool(domain_regex.match(domain))
 
 def parse_hosts_file(content):
     """Parses a host file content into AdBlock rules."""
@@ -19,8 +25,9 @@ def parse_hosts_file(content):
         else:
             parts = line.split()
             domain = parts[-1]
-            rule = f'||{domain}^'
-            adblock_rules.add(rule)
+            if is_valid_domain(domain):
+                rule = f'||{domain}^'
+                adblock_rules.add(rule)
 
     return adblock_rules
 
