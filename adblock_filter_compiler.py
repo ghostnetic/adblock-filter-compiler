@@ -69,7 +69,7 @@ def main():
     blocklist_urls = [
         'https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/multi.txt',
         'https://gitlab.com/quidsup/notrack-blocklists/-/raw/master/trackers.hosts',
-        'https://adguardteam.github.io/HostlistsRegistry/assets/filter_27.txt',
+        'https://adguardteam.github.io/HostsRegistry/assets/filter_27.txt',
         'https://hblock.molinero.dev/hosts_adblock.txt',
     ]
 
@@ -78,7 +78,7 @@ def main():
         with requests.get(url) as response:
             file_contents.append(response.text)
 
-    filter_content, duplicates_removed = generate_filter(file_contents)
+    filter_content, duplicates_removed, redundant_rules_removed = generate_filter(file_contents)
 
     # Write the filter content to a file
     with open('blocklist.txt', 'w') as f:
@@ -86,3 +86,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
