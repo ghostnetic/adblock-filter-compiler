@@ -25,32 +25,44 @@ def parse_hosts_file(content):
     return adblock_rules
 
 def generate_filter(file_contents):
-    """Generates filter content from file_contents by eliminating duplicates."""
+    """Generates filter content from file_contents by eliminating duplicates and redundant rules."""
     duplicates_removed = 0
+    redundant_rules_removed = 0
     adblock_rules_set = set()
 
     for content in file_contents:
         adblock_rules = parse_hosts_file(content)
         for rule in adblock_rules:
             if rule not in adblock_rules_set:
-                adblock_rules_set.add(rule)
+                # Check for redundant rules
+                domain = rule[2:-1]  # Remove '||' and '^'
+                if not any(d in adblock_rules_set for d in (f'||{d}^' for d in get_parent_domains(domain))):
+                    adblock_rules_set.add(rule)
+                else:
+                    redundant_rules_removed += 1
             else:
                 duplicates_removed += 1
 
     sorted_rules = sorted(list(adblock_rules_set))
-    header = generate_header(len(sorted_rules), duplicates_removed)
+    header = generate_header(len(sorted_rules), duplicates_removed, redundant_rules_removed)
     filter_content = '\n'.join([header, '', *sorted_rules])  # Add an empty line after the header
-    return filter_content, duplicates_removed
+    return filter_content, duplicates_removed, redundant_rules_removed
 
-def generate_header(domain_count, duplicates_removed):
-    """Generates header with specific domain count and removed duplicates information."""
+def generate_header(domain_count, duplicates_removed, redundant_rules_removed):
+    """Generates header with specific domain count, removed duplicates, and compressed domains information."""
     date = datetime.now().strftime('%Y-%m-%d')
     return f"""# Title: AdBlock Filter Compiler
 # Description: A Python script that generates AdBlock syntax filters by combining and processing multiple blocklists, host files, and domain lists.
 # Created: {date}
 # Domain Count: {domain_count}
 # Duplicates Removed: {duplicates_removed}
-#==============================================================="""
+# Domains Compressed: {redundant_rules_removed}
+#=================================================================="""
+
+def get_parent_domains(domain):
+    """Generates all possible parent domains of a given domain."""
+    parts = domain.split('.')
+    return ['.'.join(parts[i:]) for i in range(1, len(parts))]
 
 def main():
     """Main function to fetch blocklists and generate a combined filter."""
