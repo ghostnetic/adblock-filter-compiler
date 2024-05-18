@@ -1,7 +1,9 @@
 import re
 import requests
+import concurrent.futures
 from datetime import datetime
 import json
+import logging
 
 # Pre-compiled regular expression for performance
 domain_regex = re.compile(
@@ -71,19 +73,39 @@ def generate_header(domain_count, duplicates_removed, redundant_rules_removed):
 # Domains Compressed: {redundant_rules_removed}
 #=================================================================="""
 
+def fetch_blocklist(url):
+    """Fetch blocklist content from a URL."""
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        return response.text
+    except (requests.RequestException, ValueError) as e:
+        logging.error(f"Error fetching blocklist from {url}: {e}")
+        return None
+
 def main():
     """Main function to fetch blocklists and generate a combined filter."""
+    logging.basicConfig(level=logging.INFO)
+
     with open('config.json') as f:
         config = json.load(f)
 
     blocklist_urls = config['blocklist_urls']
-    file_contents = [requests.get(url).text for url in blocklist_urls]
+
+    # Fetch blocklists in parallel
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        file_contents = list(executor.map(fetch_blocklist, blocklist_urls))
+
+    # Filter out None values from failed fetches
+    file_contents = [content for content in file_contents if content is not None]
 
     filter_content, _, _ = generate_filter(file_contents)
 
     # Write the filter content to a file
     with open('blocklist.txt', 'w') as f:
         f.write(filter_content)
+
+    logging.info("Blocklist generation completed successfully.")
 
 if __name__ == "__main__":
     main()
