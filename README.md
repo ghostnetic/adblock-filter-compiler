@@ -1,44 +1,68 @@
 # AdBlock Filter Compiler
 
-This repository offers a Python script that combines and processes various blocklists, host files, and domain lists to produce an AdBlock filter list. A sorted list of domains in AdBlock syntax format is produced after the script eliminates duplicates and redundant rules.
+This repository contains a Python script designed to compile and optimize various blocklists, host files, and domain lists into a single, efficient AdBlock filter list. The script ensures that the resulting list is free of duplicates and redundant rules, providing a streamlined and effective ad-blocking experience.
 
-## Features
+## Key Features
 
-- Combines multiple blocklists, host files, and domain lists into a single AdBlock filter list
-- Removes duplicate entries
-- Removes redundant rules that are covered by existing domain rules
-- Generates a header with the date, time, domain count, and the number of duplicates and redundant rules removed
-- Allows customization of blocklist sources through a configuration file
+- **Integration**: Combines multiple blocklists, host files, and domain lists into one cohesive AdBlock filter.
+- **Optimization**: Identifies and removes duplicate entries and redundant rules to enhance filter efficiency.
+- **Customization**: Allows users to specify custom blocklist sources through a `config.json` file.
+- **Header Generation**: Automatically generates a header with detailed metadata, including the date, time, domain count, and statistics on duplicates and redundant rules removed.
 
-## Included Filter Lists
+## Default Filter Lists
 
-This project combines the following filter lists by default:
+By default, the script integrates the following filter lists:
 
 - [hagezi/dns-blocklists (pro.txt)](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt)
 - [quidsup/notrack-blocklists (trackers.hosts)](https://gitlab.com/quidsup/notrack-blocklists/-/raw/master/trackers.hosts)
 - [hBlock/blocklist (hosts_adblock.txt)](https://hblock.molinero.dev/hosts_adblock.txt)
 
-You can easily add your own filter lists by creating a `config.json` file and updating the `blocklist_urls` array with the URLs of your custom filter lists.
+You can customize the sources by modifying the `blocklist_urls` array in the `config.json` file.
 
-## Usage
+## Getting Started
 
-1. Clone the repository or download the source code.
-2. Create a `config.json` file and add or remove blocklist URLs in the `blocklist_urls` array.
-3. Run the `adblock_filter_compiler.py` script. This will generate the `blocklist.txt` file with the combined filter list in AdBlock syntax format.
+### Prerequisites
+
+- Ensure you have Python 3.x installed on your system.
+- Install the required Python package:
+  ```bash
+  pip install requests
+  ```
+
+### Usage
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/adblock-filter-compiler.git
+   cd adblock-filter-compiler
+   ```
+2. Create a `config.json` file and configure your blocklist URLs:
+   ```json
+   {
+     "blocklist_urls": [
+       "https://example.com/blocklist1.txt",
+       "https://example.com/blocklist2.txt"
+     ]
+   }
+   ```
+3. Run the script to generate the filter list:
+   ```bash
+   python adblock_filter_compiler.py
+   ```
+   The script will output a `blocklist.txt` file containing the compiled filter list.
 
 ## Automated Updates
 
-This repository uses GitHub Actions to automate the filter generation process. The workflow runs every day and updates the `blocklist.txt` file if there are any changes.
-
-## Dependencies
-
-- Python 3.x
-- requests
+This repository leverages GitHub Actions to automate the filter compilation process. The workflow is scheduled to run daily, ensuring that the `blocklist.txt` file is updated with the latest changes.
 
 ## Contributing
 
-Feel free to open an issue or submit a pull request if you have any improvements or suggestions.
+Contributions are welcome! If you have any improvements, suggestions, or bug fixes, please open an issue or submit a pull request.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+
+---
+
+Thank you for using the AdBlock Filter Compiler! If you have any questions or need further assistance, feel free to reach out.
