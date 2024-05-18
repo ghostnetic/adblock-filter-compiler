@@ -1,111 +1,82 @@
 import re
 import requests
 import concurrent.futures
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 import logging
 
-# Pre-compiled regular expression for performance
+# Enhanced regex for efficiency (more strict IP pattern, reduced backtracking)
 domain_regex = re.compile(
-    r"^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$"
+    r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"  # IP check
+    r"|(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$"  # Domain
 )
 
 def is_valid_domain(domain):
-    """Checks if a string is a valid domain."""
-    return bool(domain_regex.match(domain))
+    return bool(domain_regex.fullmatch(domain))  # Use fullmatch for stricter check
 
 def parse_hosts_file(content):
-    """Parses a host file content into AdBlock rules."""
-    adblock_rules = set()
-
-    for line in content.split('\n'):
+    # Generator for lazy evaluation, potentially saving memory
+    for line in content.splitlines():
         line = line.strip()
-
-        # Ignore comments and empty lines
-        if not line or line[0] in ('#', '!'):
-            continue
-
-        # Check if line follows AdBlock syntax, else create new rule
-        if line.startswith('||') and line.endswith('^'):
-            adblock_rules.add(line)
-        else:
-            parts = line.split()
-            domain = parts[-1]
-            if is_valid_domain(domain):
-                adblock_rules.add(f'||{domain}^')
-
-    return adblock_rules
+        if line and not line.startswith(('#', '!')):
+            yield line if line.startswith('||') and line.endswith('^') else f'||{line.split()[-1]}^'
 
 def generate_filter(file_contents):
-    """Generates filter content from file_contents by eliminating duplicates and redundant rules."""
-    adblock_rules_set = set()
-    base_domain_set = set()
-    duplicates_removed = 0
-    redundant_rules_removed = 0
+    adblock_rules = set()
+    base_domains = set()
+    stats = {"duplicates": 0, "compressed": 0}
 
     for content in file_contents:
-        adblock_rules = parse_hosts_file(content)
-        for rule in adblock_rules:
-            domain = rule[2:-1]  # Remove '||' and '^'
-            base_domain = domain.split('.')[-2:]  # Get the base domain (last two parts)
-            base_domain = '.'.join(base_domain)
-            if rule not in adblock_rules_set and base_domain not in base_domain_set:
-                adblock_rules_set.add(rule)
-                base_domain_set.add(base_domain)
+        for rule in parse_hosts_file(content):
+            domain = rule[2:-1]
+            base_domain = '.'.join(domain.rsplit('.', 2)[-2:])  # Efficient base domain extraction
+            if rule not in adblock_rules and base_domain not in base_domains:
+                adblock_rules.add(rule)
+                base_domains.add(base_domain)
             else:
-                if rule in adblock_rules_set:
-                    duplicates_removed += 1
-                else:
-                    redundant_rules_removed += 1
+                stats["duplicates" if rule in adblock_rules else "compressed"] += 1
 
-    sorted_rules = sorted(adblock_rules_set)
-    header = generate_header(len(sorted_rules), duplicates_removed, redundant_rules_removed)
-    return '\n'.join([header, '', *sorted_rules]), duplicates_removed, redundant_rules_removed
+    sorted_rules = sorted(adblock_rules)
+    header = generate_header(len(sorted_rules), **stats)
+    return '\n'.join([header, *sorted_rules]), stats  # No need for extra newline
 
-def generate_header(domain_count, duplicates_removed, redundant_rules_removed):
-    """Generates header with specific domain count, removed duplicates, and compressed domains information."""
-    date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S %Z')  # Includes date, time, and timezone
+def generate_header(domain_count, duplicates, compressed):
+    timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')
     return f"""# Title: Ghostnetic's Blocklist
-# Description: Python script that generates adblock filters by combining blocklists, host files, and domain lists.
-# Last Modified: {date_time}
+# Description: Python script that generates adblock filters.
+# Last Modified: {timestamp}
 # Domain Count: {domain_count}
-# Duplicates Removed: {duplicates_removed}
-# Domains Compressed: {redundant_rules_removed}
-#=================================================================="""
+# Duplicates Removed: {duplicates}
+# Domains Compressed: {compressed}
+"""
 
-def fetch_blocklist(url):
-    """Fetch blocklist content from a URL."""
+def fetch_blocklist(url, session=None):
+    """Fetch blocklist using optional session for potential reuse."""
+    session = session or requests.Session()  # Create if not provided
     try:
-        response = requests.get(url, timeout=5)
+        response = session.get(url, timeout=5)
         response.raise_for_status()
         return response.text
-    except (requests.RequestException, ValueError) as e:
-        logging.error(f"Error fetching blocklist from {url}: {e}")
-        return None
+    except requests.RequestException as e:
+        logging.error(f"Error fetching {url}: {e}")
 
 def main():
-    """Main function to fetch blocklists and generate a combined filter."""
-    logging.basicConfig(level=logging.INFO)
-
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     with open('config.json') as f:
         config = json.load(f)
 
-    blocklist_urls = config['blocklist_urls']
-
-    # Fetch blocklists in parallel
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        file_contents = list(executor.map(fetch_blocklist, blocklist_urls))
+        # Reuse session for all requests within the executor
+        with requests.Session() as session:
+            results = executor.map(lambda url: fetch_blocklist(url, session), config['blocklist_urls'])
+    
+    file_contents = filter(None, results)  # More concise filtering
+    filter_content, stats = generate_filter(file_contents)
 
-    # Filter out None values from failed fetches
-    file_contents = [content for content in file_contents if content is not None]
-
-    filter_content, _, _ = generate_filter(file_contents)
-
-    # Write the filter content to a file
     with open('blocklist.txt', 'w') as f:
         f.write(filter_content)
 
-    logging.info("Blocklist generation completed successfully.")
+    logging.info(f"Blocklist generated: {len(filter_content.splitlines())} lines, {stats['duplicates']} duplicates removed, {stats['compressed']} domains compressed")
 
 if __name__ == "__main__":
     main()
