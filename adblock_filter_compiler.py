@@ -62,11 +62,14 @@ def generate_header(domain_count, duplicates, compressed):
 def fetch_blocklist(url, session=None, max_age=timedelta(hours=24)):
     """Fetch blocklist using optional session and caching."""
     now = datetime.now(timezone.utc)
-    if url in fetch_blocklist.cache_info().hits:
-        last_fetch_time, _ = fetch_blocklist.cache_info().hits[url]
+
+    # Fix: Check cache hits using `url in fetch_blocklist.cache_info()`
+    if url in fetch_blocklist.cache_info(): 
+        last_fetch_time, _ = fetch_blocklist.cache_info()[url]
         if now - last_fetch_time < max_age:
             logging.info(f"Using cached result for {url}")
             return fetch_blocklist.cache_get(url)
+
 
     session = session or requests.Session()
     try:
